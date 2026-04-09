@@ -1431,6 +1431,7 @@ def run_process(sheet_name, start_row, end_row, env_name_from_ui=None):
         key = (region, build_group_key(row))
         grouped_orders[key].append((int(row["__sheet_row__"]), row))
 
+    failed_records = []
     all_row_results = {}
 
     region_groups = defaultdict(list)
@@ -1682,4 +1683,5 @@ def run_process_web(
         "success_count": success_count,
         "fail_count": fail_count,
         "total_processed": len(all_row_results),
+        "failed_records": failed_records,
     }
