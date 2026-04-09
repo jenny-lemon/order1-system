@@ -312,7 +312,8 @@ if run_clicked:
                 "error": str(e),
             })
 
-            print(f"❌ 第 {row_no} 列失敗：{e}")
+            ui_log(f"❌ 第 {row_no} 列失敗：{e}")
+            total_processed += 1
 
     st.markdown('</div>', unsafe_allow_html=True)
 
