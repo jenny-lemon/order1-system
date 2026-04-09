@@ -305,15 +305,13 @@ if run_clicked:
 
         except Exception as e:
             total_fail += 1
-            
+            total_processed += 1
             failed_records.append({
                 "row": row_no,
                 "name": "未知",
                 "error": str(e),
             })
-
             ui_log(f"❌ 第 {row_no} 列失敗：{e}")
-            total_processed += 1
 
     st.markdown('</div>', unsafe_allow_html=True)
 
