@@ -276,6 +276,7 @@ if run_clicked:
                 end_row=row_no,
                 selected_actions=selected_actions,
                 logger=ui_log,
+                failed_records = []
             )
 
             if isinstance(result, dict):
@@ -305,13 +306,14 @@ if run_clicked:
 
         except Exception as e:
             total_fail += 1
-            total_processed += 1
+            
             failed_records.append({
                 "row": row_no,
-                "name": "未知",
+                "name": customer_name,
                 "error": str(e),
             })
-            ui_log(f"❌ 第 {row_no} 列失敗：{e}")
+
+            print(f"❌ 第 {row_no} 列失敗：{e}")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
