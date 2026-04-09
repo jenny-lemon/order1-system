@@ -179,7 +179,7 @@ def display_period_text(start_time_str, end_time_str):
 
 def slot_duration_hours(slot_text):
     start_text, end_text = slot_text.split("-")
-    return calc_hours_from_time(start_text, end_text)
+    return calc_effective_hours_from_time(start_text, end_text)
 
 
 def slot_start_hour(slot_text):
