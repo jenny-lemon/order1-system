@@ -276,7 +276,6 @@ if run_clicked:
                 end_row=row_no,
                 selected_actions=selected_actions,
                 logger=ui_log,
-                failed_records = []
             )
 
             if isinstance(result, dict):
@@ -309,7 +308,7 @@ if run_clicked:
             
             failed_records.append({
                 "row": row_no,
-                "name": customer_name,
+                "name": "未知",
                 "error": str(e),
             })
 
