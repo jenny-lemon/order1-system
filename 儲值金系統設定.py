@@ -74,8 +74,6 @@ STANDARD_SLOTS = [
     "14:00-16:00",  # 下午 2 小時
     "14:00-17:00",  # 下午 3 小時
     "14:00-18:00",  # 下午 4 小時
-    "09:00-16:00",  # 全天 6 小時
-    "09:00-18:00",  # 全天 8 小時    
 ]
 
 
@@ -179,7 +177,7 @@ def display_period_text(start_time_str, end_time_str):
 
 def slot_duration_hours(slot_text):
     start_text, end_text = slot_text.split("-")
-    return calc_effective_hours_from_time(start_text, end_text)
+    return calc_hours_from_time(start_text, end_text)
 
 
 def slot_start_hour(slot_text):
@@ -1431,7 +1429,6 @@ def run_process(sheet_name, start_row, end_row, env_name_from_ui=None):
         key = (region, build_group_key(row))
         grouped_orders[key].append((int(row["__sheet_row__"]), row))
 
-    failed_records = {}
     all_row_results = {}
 
     region_groups = defaultdict(list)
@@ -1475,11 +1472,6 @@ def run_process(sheet_name, start_row, end_row, env_name_from_ui=None):
             except Exception as e:
                 print(f"❌ 整組失敗：{e}")
                 for row_num, _ in rows_with_idx:
-                    failed_records.append({
-                        "row": row_num,
-                        "name": str(row.get("姓名", "未知")).strip(),
-                        "error": str(e),
-                    })
                     all_row_results[row_num] = {
                         "訂單編號": "",
                         "結果": "失敗",
@@ -1575,7 +1567,7 @@ def run_process_web(
 
     if df.empty:
         logger("沒有符合條件的資料可執行。")
-        return {"success": True, "message": "沒有符合條件的資料", "failed_records": []}
+        return {"success": True, "message": "沒有符合條件的資料"}
 
     filtered_rows = []
     for _, row in df.iterrows():
@@ -1585,7 +1577,7 @@ def run_process_web(
 
     if not filtered_rows:
         logger(f"沒有 {region} 區域的資料可執行。")
-        return {"success": True, "message": f"沒有 {region} 區域資料", "failed_records": []}
+        return {"success": True, "message": f"沒有 {region} 區域資料"}
 
     df = pd.DataFrame(filtered_rows)
     if "__sheet_row__" not in df.columns:
@@ -1634,22 +1626,11 @@ def run_process_web(
                 selected_actions=selected_actions,
             )
             all_row_results[row_num] = result
-            if result.get("結果") == "失敗":
-                failed_records.append({
-                    "row": row_num,
-                    "name": str(row.get("姓名", "未知")).strip(),
-                    "error": str(result.get("原因", "")),
-                })
         except Exception as e:
             all_row_results[row_num] = {
                 "結果": "失敗",
                 "原因": f"補處理失敗: {e}",
             }
-            failed_records.append({
-                "row": row_num,
-                "name": str(row.get("姓名", "未知")).strip(),
-                "error": f"補處理失敗: {e}",
-            })
 
     for group_no, (_, rows_with_idx) in enumerate(grouped_orders.items(), start=1):
         _, first_row = rows_with_idx[0]
@@ -1667,24 +1648,9 @@ def run_process_web(
                 selected_actions=selected_actions,
             )
             all_row_results.update(row_results)
-
-            for row_num, row in rows_with_idx:
-                result = row_results.get(row_num, {})
-                if result.get("結果") == "失敗":
-                    failed_records.append({
-                        "row": row_num,
-                        "name": str(row.get("姓名", "未知")).strip(),
-                        "error": str(result.get("原因", "")),
-                    })
-
         except Exception as e:
             logger(f"整組失敗：{e}")
-            for row_num, row in rows_with_idx:
-                failed_records.append({
-                    "row": row_num,
-                    "name": str(row.get("姓名", "未知")).strip(),
-                    "error": str(e),
-                })
+            for row_num, _ in rows_with_idx:
                 all_row_results[row_num] = {
                     "訂單編號": "",
                     "結果": "失敗",
@@ -1714,5 +1680,4 @@ def run_process_web(
         "success_count": success_count,
         "fail_count": fail_count,
         "total_processed": len(all_row_results),
-        "failed_records": failed_records,
     }
